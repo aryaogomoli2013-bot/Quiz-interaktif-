@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Pemrograman & AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 700px;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Animasi Transisi Pertanyaan */
+        .slide-up {
+            animation: slideUpAnim 0.4s ease forwards;
+        }
+
+        @keyframes slideUpAnim {
+            0% {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 3px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 3px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .code-block {
+            background-color: #0f172a;
+            color: #38bdf8;
+            padding: 16px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: var(--success);
+            color: #065f46;
+            animation: pulseCorrect 0.4s ease;
+        }
+
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: var(--error);
+            color: #991b1b;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            display: none;
+        }
+
+        .btn-next:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .result-container {
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .result-container h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .score-display {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--success);
+            margin: 20px 0;
+            letter-spacing: -1px;
+        }
+
+        .result-message {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .restart-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .restart-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Kuis Pemrograman & AI</h1>
+
+        <!-- Area Kuis -->
+        <div id="quiz-box">
+            <div class="quiz-header">
+                <span id="question-counter">Soal 1 dari 15</span>
+                <span id="score-keeper">Skor: 0</span>
+            </div>
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div id="question-card" class="slide-up">
+                <div class="question-text" id="question-text">Pertanyaan akan muncul di sini</div>
+                <div id="code-container"></div>
+                <div class="options-list" id="options-container"></div>
+            </div>
+            
+            <button class="btn-next" id="next-btn" onclick="nextQuestion()">Selanjutnya</button>
+        </div>
+
+        <!-- Area Hasil Akhir -->
+        <div class="result-container" id="result-box">
+            <h2>Kuis Selesai! 🎉</h2>
+            <p>Perolehan skor akhir Anda:</p>
+            <div class="score-display" id="final-score">0 / 15</div>
+            <p class="result-message" id="result-message"></p>
+            <button class="restart-btn" onclick="restartQuiz()">Mulai Ulang Kuis</button>
+        </div>
+    </div>
+
+    <script>
+        const rawQuestions = [
+            {
+                question: "Apa yang dimaksud dengan coding?",
+                code: "",
+                options: [
+                    "A. Proses memperbaiki perangkat keras komputer",
+                    "B. Proses memberikan instruksi kepada komputer melalui bahasa pemrograman",
+                    "C. Proses menggambar menggunakan komputer",
+                    "D. Proses menghubungkan komputer ke internet"
+                ],
+                answer: 1
+            },
+            {
+                question: "Manakah berikut ini yang merupakan bahasa pemrograman?",
+                code: "",
+                options: [
+                    "A. Google Chrome",
+                    "B. Microsoft Word",
+                    "C. Adobe Photoshop",
+                    "D. Python"
+                ],
+                answer: 3
+            },
+            {
+                question: "Apa kepanjangan dari AI?",
+                code: "",
+                options: [
+                    "A. Artificial Intelligence",
+                    "B. Automatic Internet",
+                    "C. Advanced Information",
+                    "D. Artificial Integration"
+                ],
+                answer: 0
+            },
+            {
+                question: "Apa fungsi utama dari sebuah algoritma dalam pemrograman?",
+                code: "",
+                options: [
+                    "A. Memperbesar ukuran layar komputer",
+                    "B. Menghapus semua data komputer",
+                    "C. Menyusun langkah-langkah untuk menyelesaikan masalah",
+                    "D. Mengubah komputer menjadi perangkat keras"
+                ],
+                answer: 2
+            },
+            {
+                question: "Manakah contoh penerapan AI dalam kehidupan sehari-hari?",
+                code: "",
+                options: [
+                    "A. Kursi kayu",
+                    "B. Kalkulator biasa tanpa fitur pintar",
+                    "C. Buku tulis",
+                    "D. Asisten virtual yang dapat memahami perintah suara"
+                ],
+                answer: 3
+            },
+            {
+                question: "Apa hasil dari kode Python berikut?",
+                code: "print(5 + 3)",
+                options: [
+                    "A. 53",
+                    "B. 8",
+                    "C. 2",
+                    "D. 15"
+                ],
+                answer: 1
+            },
+            {
+                question: "Apa yang dimaksud dengan machine learning?",
+                code: "",
+                options: [
+                    "A. Metode yang memungkinkan komputer mempelajari pola dari data",
+                    "B. Proses merakit komputer secara manual",
+                    "C. Cara memperbaiki keyboard",
+                    "D. Teknik mempercepat koneksi internet saja"
+                ],
+                answer: 0
+            },
+            {
+                question: "Manakah yang merupakan fungsi dari variabel dalam coding?",
+                code: "",
+                options: [
+                    "A. Menghapus program secara otomatis",
+                    "B. Menghubungkan komputer ke listrik",
+                    "C. Menyimpan nilai atau data yang dapat digunakan dalam program",
+                    "D. Mengubah bahasa pemrograman menjadi perangkat keras"
+                ],
+                answer: 2
+            },
+            {
+                question: "Apa kegunaan perintah if dalam bahasa pemrograman?",
+                code: "",
+                options: [
+                    "A. Menghentikan komputer secara paksa",
+                    "B. Membuat gambar secara otomatis",
+                    "C. Menyimpan semua file ke internet",
+                    "D. Menjalankan kode berdasarkan kondisi tertentu"
+                ],
+                answer: 3
+            },
+            {
+                question: "Manakah contoh AI generatif?",
+                code: "",
+                options: [
+                    "A. Lampu senter biasa",
+                    "B. AI yang membuat teks, gambar, atau musik berdasarkan instruksi",
+                    "C. Kabel jaringan komputer",
+                    "D. Keyboard mekanis"
+                ],
+                answer: 1
+            },
+            {
+                question: "Apa yang dimaksud dengan bug dalam pemrograman?",
+                code: "",
+                options: [
+                    "A. Kesalahan atau masalah dalam program",
+                    "B. Jenis bahasa pemrograman khusus",
+                    "C. Komponen utama monitor",
+                    "D. Aplikasi untuk menggambar"
+                ],
+                answer: 0
+            },
+            {
+                question: "Mengapa data penting dalam pengembangan AI?",
+                code: "",
+                options: [
+                    "A. Agar komputer memiliki bentuk fisik yang lebih besar",
+                    "B. Agar semua program berjalan tanpa listrik",
+                    "C. Karena data dapat digunakan untuk melatih model AI mengenali pola",
+                    "D. Karena data menghilangkan kebutuhan akan algoritma"
+                ],
+                answer: 2
+            },
+            {
+                question: "Apa hasil dari kode Python berikut?",
+                code: "nama = \"Budi\"\nprint(\"Halo\", nama)",
+                options: [
+                    "A. Budi Halo",
+                    "B. Halo nama",
+                    "C. nama Budi",
+                    "D. Halo Budi"
+                ],
+                answer: 3
+            },
+            {
+                question: "Apa salah satu risiko penggunaan AI yang perlu diperhatikan?",
+                code: "",
+                options: [
+                    "A. AI selalu menghasilkan jawaban yang benar",
+                    "B. AI dapat menghasilkan informasi yang keliru",
+                    "C. AI tidak pernah menggunakan data",
+                    "D. AI tidak dapat digunakan untuk membantu pekerjaan"
+                ],
+                answer: 1
+            },
+            {
+                question: "Apa tujuan utama melakukan debugging dalam coding?",
+                code: "",
+                options: [
+                    "A. Menemukan dan memperbaiki kesalahan dalam program",
+                    "B. Menghapus bahasa pemrograman",
+                    "C. Mengganti semua komputer",
+                    "D. Memperbesar ukuran file program"
+                ],
+                answer: 0
+            }
+        ];
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initQuiz() {
+            questions = shuffleArray([...rawQuestions]);
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('quiz-box').style.display = 'block';
+            document.getElementById('result-box').style.display = 'none';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.style.display = 'none';
+            nextBtn.innerText = "Selanjutnya";
+
+            // Efek animasi masuk kartu soal
+            const card = document.getElementById('question-card');
+            card.classList.remove('slide-up');
+            void card.offsetWidth; // Trigger reflow
+            card.classList.add('slide-up');
+
+            const currentQ = questions[currentQuestionIndex];
+            
+            // Update Header & Progress Bar
+            document.getElementById('question-counter').innerText = `Soal ${currentQuestionIndex + 1} dari ${questions.length}`;
+            document.getElementById('score-keeper').innerText = `Skor: ${score}`;
+            
+            const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            
+            // Pertanyaan & Blok Kode
+            document.getElementById('question-text').innerText = currentQ.question;
+            const codeContainer = document.getElementById('code-container');
+            if (currentQ.code) {
+                codeContainer.innerHTML = `<div class="code-block">${currentQ.code}</div>`;
+                codeContainer.style.display = 'block';
+            } else {
+                codeContainer.innerHTML = '';
+                codeContainer.style.display = 'none';
+            }
+
+            // Opsi Jawaban
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            currentQ.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedButton) {
+            if (answered) return;
+            answered = true;
+
+            const currentQ = questions[currentQuestionIndex];
+            const optionButtons = document.querySelectorAll('.option-btn');
+
+            if (selectedIndex === currentQ.answer) {
+                selectedButton.classList.add('correct');
+                score++;
+                document.getElementById('score-keeper').innerText = `Skor: ${score}`;
+            } else {
+                selectedButton.classList.add('incorrect');
+                optionButtons[currentQ.answer].classList.add('correct');
+            }
+
+            optionButtons.forEach(btn => btn.disabled = true);
+
+            const nextBtn = document.getElementById('next-btn');
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.innerText = "Lihat Hasil Kuis";
+            }
+            nextBtn.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-box').style.display = 'none';
+            document.getElementById('result-box').style.display = 'block';
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            document.getElementById('progress-bar').style.width = `100%`;
+            
+            let message = "";
+            const percentage = (score / questions.length) * 100;
+            if (percentage === 100) {
+                message = "Luar biasa! Kamu menjawab seluruh soal dengan sempurna! Pertahankan prestasimu! 🌟";
+            } else if (percentage >= 75) {
+                message = "Kerja bagus! Pemahamanmu tentang dunia pemrograman dan AI sudah sangat matang. 👏";
+            } else if (percentage >= 50) {
+                message = "Cukup baik! Tetap semangat belajar untuk memperdalam materi coding dan AI. 👍";
+            } else {
+      
